@@ -1,0 +1,387 @@
+<html><head><base href="https://example.com/cute-art-technique-drill/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>かわいいモダンアート技法カルタ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap');
+
+  body {
+    font-family: 'Kosugi Maru', sans-serif;
+    background-color: #e8f5e9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    color: #2e7d32;
+    margin: 0;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  h1 {
+    color: #1b5e20;
+    text-align: center;
+    font-size: 1.8em;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    margin: 10px 0;
+  }
+  #game-area {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+    width: 100%;
+  }
+  .technique-container {
+    background-color: #c8e6c9;
+    border: 2px solid #4caf50;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  .technique-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+  .technique-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: #1b5e20;
+    background-color: #ffd1dc;
+    padding: 3px 6px;
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  .drop-zone {
+    width: 100%;
+    height: 60px;
+    border: 2px dashed #4caf50;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    color: #4caf50;
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+    text-align: center;
+    padding: 5px;
+  }
+  .drop-zone:hover {
+    background-color: #f1f8e9;
+  }
+  .card {
+    width: calc(20% - 10px);
+    height: 120px;
+    background-color: #ffd1dc;
+    border: 2px solid #ff69b4;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 5px;
+    cursor: move;
+    user-select: none;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 0.9em;
+    color: #8b4573;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-weight: bold;
+    line-height: 1.3;
+  }
+  .card:hover {
+    box-shadow: 0 3px 6px rgba(255,105,180,0.3);
+    transform: translateY(-2px);
+  }
+  #card-pool {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #ffb3ba;
+    border-radius: 15px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    width: calc(100% - 20px);
+  }
+  #score-container {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  #score {
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #4caf50;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .firework {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  #reset-button {
+    padding: 5px 10px;
+    font-size: 14px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  #reset-button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  #congratulations {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #4caf50;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: none;
+  }
+</style>
+</head>
+<body>
+  <h1>🎨 かわいいモダンアート技法カルタ 🖌️</h1>
+  <div id="game-area"></div>
+  <div id="card-pool"></div>
+  <div id="score-container">
+    <div id="score">スコア: 0</div>
+    <button id="reset-button">リセット</button>
+  </div>
+  <div id="congratulations">スコア達成おめでとう！🎉</div>
+
+<script>
+const techniques = [
+  { name: "ドリッピング", description: "絵具をぽたぽた垂らして、\n偶然の美しさを作るよ！" },
+  { name: "コラージュ", description: "いろんな素材を貼り合わせて、\n新しい世界を作っちゃおう！" },
+  { name: "フロッタージュ", description: "デコボコした面の上に\n紙を置いて、こすってみよう！" },
+  { name: "デカルコマニー", description: "絵具を挟んでぺったん！\n左右対称の不思議な模様ができるよ" },
+  { name: "グラッタージュ", description: "塗った上からひっかいて、\nまるで魔法みたいに絵を描こう！" },
+  { name: "スパッタリング", description: "網とブラシを使って絵の具を飛ばし、\nほしぞらみたいな効果を出そう。" },
+  { name: "縄ペタ", description: "縄でスタンプを作って押す。\nユニークな模様が楽しいよ！" },
+  { name: "マーブリング", description: "専用の液を水面に垂らし、\n模様を作り、上から紙をあてて\n模様を写し取る。" },
+  { name: "スチロング", description: "毛糸や糸に絵の具をつけ、\n二つ折りにした紙にはさみ、\n着色した糸を挟んで引き抜く。" },
+  { name: "バチック", description: "クレヨンなどの油性素材で\n図柄を書き、上から多めの水で\n溶いた絵の具で彩色する。" }
+];
+
+let score = 0;
+let gameCompleted = false;
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function createCard(content) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = content.replace(/\n/g, '<br>');
+  card.draggable = true;
+  card.addEventListener('dragstart', drag);
+  return card;
+}
+
+function createTechniqueContainer(technique) {
+  const container = document.createElement('div');
+  container.className = 'technique-container';
+  
+  const name = document.createElement('div');
+  name.className = 'technique-name';
+  name.textContent = technique.name;
+  container.appendChild(name);
+  
+  const dropZone = document.createElement('div');
+  dropZone.className = 'drop-zone';
+  dropZone.textContent = '説明カードをここに';
+  dropZone.addEventListener('dragover', allowDrop);
+  dropZone.addEventListener('drop', (event) => drop(event, technique));
+  container.appendChild(dropZone);
+  
+  return container;
+}
+
+function initializeGame() {
+  const gameArea = document.getElementById('game-area');
+  const cardPool = document.getElementById('card-pool');
+  gameArea.innerHTML = '';
+  cardPool.innerHTML = '';
+  
+  techniques.forEach(technique => {
+    gameArea.appendChild(createTechniqueContainer(technique));
+  });
+  
+  const shuffledDescriptions = techniques.map(t => t.description);
+  shuffleArray(shuffledDescriptions);
+  
+  shuffledDescriptions.forEach(description => {
+    cardPool.appendChild(createCard(description));
+  });
+  
+  score = 0;
+  gameCompleted = false;
+  updateScore();
+  document.getElementById('congratulations').style.display = 'none';
+}
+
+function drag(event) {
+  event.dataTransfer.setData('text', event.target.innerHTML);
+}
+
+function allowDrop(event) {
+  event.preventDefault();
+}
+
+function drop(event, technique) {
+  event.preventDefault();
+  const data = event.dataTransfer.getData('text');
+  
+  if (data === technique.description.replace(/\n/g, '<br>')) {
+    event.target.innerHTML = data;
+    event.target.style.backgroundColor = '#fffacd'; // 薄黄色に変更
+    event.target.style.border = '2px solid #ffd700';
+    score += 10;
+    updateScore();
+    createFireworks(event.target);
+    
+    // 正解したカードを削除
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+      if (card.innerHTML === data) {
+        card.style.transition = 'all 0.5s ease';
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.1)';
+        setTimeout(() => {
+          card.remove();
+        }, 500);
+      }
+    });
+
+    if (score === 100 && !gameCompleted) {
+      gameCompleted = true;
+      showCongratulations();
+    }
+  } else {
+    event.target.textContent = 'ざんねん！';
+    event.target.style.backgroundColor = '#ffcdd2';
+    setTimeout(() => {
+      event.target.textContent = '説明カードをここに';
+      event.target.style.backgroundColor = '';
+    }, 1500);
+  }
+}
+
+function updateScore() {
+  document.getElementById('score').textContent = `スコア: ${score}`;
+}
+
+function createFireworks(element) {
+  for (let i = 0; i < 30; i++) {
+    const firework = document.createElement('div');
+    firework.className = 'firework';
+    const color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+    firework.style.backgroundColor = color;
+    
+    const angle = Math.random() * Math.PI * 2;
+    const velocity = 1 + Math.random() * 2;
+    let x = 0;
+    let y = 0;
+    
+    const animate = () => {
+      x += Math.cos(angle) * velocity;
+      y += Math.sin(angle) * velocity + 0.1;
+      
+      firework.style.transform = `translate(${x}px, ${y}px)`;
+      firework.style.opacity = 1 - (Math.abs(x) + Math.abs(y)) / 100;
+      
+      if (firework.style.opacity > 0) {
+        requestAnimationFrame(animate);
+      } else {
+        firework.remove();
+      }
+    };
+    
+    element.appendChild(firework);
+    requestAnimationFrame(animate);
+  }
+}
+
+function showCongratulations() {
+  const congratsElement = document.getElementById('congratulations');
+  congratsElement.style.display = 'block';
+  createMassiveFireworks();
+}
+
+function createMassiveFireworks() {
+  for (let i = 0; i < 100; i++) {
+    setTimeout(() => {
+      const firework = document.createElement('div');
+      firework.className = 'firework';
+      const color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+      firework.style.backgroundColor = color;
+      
+      const startX = Math.random() * window.innerWidth;
+      const startY = window.innerHeight;
+      const angle = Math.random() * Math.PI - Math.PI / 2; // Upward direction
+      const velocity = 3 + Math.random() * 3;
+      let x = startX;
+      let y = startY;
+      
+      const animate = () => {
+        x += Math.cos(angle) * velocity;
+        y += Math.sin(angle) * velocity;
+        
+        firework.style.transform = `translate(${x}px, ${y}px)`;
+        firework.style.opacity = 1 - (startY - y) / startY;
+        
+        if (y > 0 && firework.style.opacity > 0) {
+          requestAnimationFrame(animate);
+        } else {
+          firework.remove();
+        }
+      };
+      
+      document.body.appendChild(firework);
+      requestAnimationFrame(animate);
+    }, i * 50); // Stagger the fireworks
+  }
+}
+
+document.getElementById('reset-button').addEventListener('click', initializeGame);
+
+initializeGame();
+</script>
+
+</body></html>
